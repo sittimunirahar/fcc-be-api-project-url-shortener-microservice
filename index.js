@@ -30,25 +30,26 @@ app.post('/api/shorturl', function(req, res) {
   const originalUrl = req.body.url
 
   try{
-    const hostname = new URL(originalUrl).hostname
-
+    const urlObj = new URL(originalUrl);
+    const hostname = urlObj.hostname;
+    
     dns.lookup(hostname, (err) => {
       if (err) {
-        res.json({'error': 'invalid url'})
+        console.error('DNS lookup failed:', err);
+        res.json({'error': 'invalid url'});
+      }else{
+        const shortUrl = uid.rnd()
+        urlMap[shortUrl] = originalUrl
+
+        res.json({ 
+          original_url: originalUrl,
+          short_url: shortUrl
+        })
       }
     });
-
   } catch (error) {
     res.json({'error': 'invalid url'})
   }
-  
-  const shortUrl = uid.rnd()
-  urlMap[shortUrl] = originalUrl
-
-  res.json({ 
-    original_url: originalUrl,
-    short_url: shortUrl
-  })
 })
 
 app.get('/api/shorturl/:short_url', function(req, res) {
